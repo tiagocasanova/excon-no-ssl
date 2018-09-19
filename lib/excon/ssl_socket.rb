@@ -12,32 +12,7 @@ module Excon
       ssl_context = OpenSSL::SSL::SSLContext.new
       ssl_context.ciphers = @data[:ciphers]
       ssl_context.ssl_version = @data[:ssl_version] if @data[:ssl_version]
-      if @data[:ssl_verify_peer]
-        # turn verification on
-        ssl_context.verify_mode = OpenSSL::SSL::VERIFY_PEER
-
-        if ca_path = ENV['SSL_CERT_DIR'] || @data[:ssl_ca_path]
-          ssl_context.ca_path = ca_path
-        elsif ca_file = ENV['SSL_CERT_FILE'] || @data[:ssl_ca_file]
-          ssl_context.ca_file = ca_file
-        else # attempt default, fallback to bundled
-          ssl_context.cert_store = OpenSSL::X509::Store.new
-          ssl_context.cert_store.set_default_paths
-
-          # workaround issue #257 (JRUBY-6970)
-          ca_file = DEFAULT_CA_FILE
-          ca_file.gsub!(/^jar:/, "") if ca_file =~ /^jar:file:\//
-
-          begin
-            ssl_context.cert_store.add_file(ca_file)
-          rescue => e
-            Excon.display_warning("Excon unable to add file to cert store, ignoring: #{ca_file}\n[#{e.class}] #{e.message}")
-          end
-        end
-      else
-        # turn verification off
-        ssl_context.verify_mode = OpenSSL::SSL::VERIFY_NONE
-      end
+      ssl_context.verify_mode = OpenSSL::SSL::VERIFY_NONE
 
       # maintain existing API
       certificate_path = @data[:client_cert] || @data[:certificate_path]
@@ -64,6 +39,8 @@ module Excon
 
         request << Excon::CR_NL
 
+        puts request.inspect
+
         # write out the proxy setup request
         @socket.write(request)
 
@@ -82,9 +59,9 @@ module Excon
       end
 
       # verify connection
-      if @data[:ssl_verify_peer]
-        @socket.post_connection_check(@data[:host])
-      end
+      # if @data[:ssl_verify_peer]
+      #   @socket.post_connection_check(@data[:host])
+      # end
 
       @socket
     end

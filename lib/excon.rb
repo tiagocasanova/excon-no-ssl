@@ -43,7 +43,7 @@ module Excon
         :persistent         => false,
         :read_timeout       => 60,
         :retry_limit        => DEFAULT_RETRY_LIMIT,
-        :ssl_verify_peer    => false,
+        :ssl_verify_peer    => true,
         :tcp_nodelay        => false,
         :uri_parser         => URI,
         :write_timeout      => 60
